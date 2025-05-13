@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.IO;
+using System.Windows.Controls;
+
+namespace SEWorkbenchHelper
+{
+    public partial class MainWindow : Window
+    {
+        private readonly string _scriptsFolder = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
+        public MainWindow()
+        {
+            InitializeComponent();
+            LoadScriptList();
+        }
+
+        private void LoadScriptList ()
+        {
+            if (!Directory.Exists(_scriptsFolder)) Directory.CreateDirectory(_scriptsFolder);
+
+            var scriptFiles = Directory.GetFiles(_scriptsFolder, "*.cs");
+            FilesListBox.ItemsSource = scriptFiles;
+        }
+
+        private void FilesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FilesListBox.SelectedItem is string selectedFile)
+            {
+                FileContentTextBox.Text = File.ReadAllText(selectedFile);
+            }
+        }
+    }
+}

@@ -11,10 +11,19 @@
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Margin="5">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                <Button Content="Create" Width="80" Margin="0,0,5,0" Click="Create_Button" />
+                <Button Content="Refresh" Width="80" Click="Refresh_Button" />
+            </StackPanel>
+            <!-- List File -->
+            <ListBox x:Name="FilesListBox" Grid.Column="0" Margin="5"
+                     SelectionChanged="FilesListBox_SelectionChanged"
+                     DisplayMemberPath="FileName"/>
+        </StackPanel>
+         
         
-        <!-- List File -->
-        <ListBox x:Name="FilesListBox" Grid.Column="0" Margin="5"
-                 SelectionChanged="FilesListBox_SelectionChanged"/>
 
         <!-- The area for the file contents -->
         <TextBox x:Name="FileContentTextBox" Grid.Column="1" Margin="5" 

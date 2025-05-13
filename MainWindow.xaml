@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:SEWorkbenchHelper"
         mc:Ignorable="d"
         Title="SEWorkbenchHelper" Height="600" Width="800">
@@ -36,8 +37,12 @@
         
 
         <!-- The area for the file contents -->
-        <TextBox x:Name="FileContentTextBox" Grid.Column="1" Margin="5" 
-                 IsReadOnly="True" VerticalScrollBarVisibility="Auto" 
-                 HorizontalScrollBarVisibility="Auto" />
+        <avalon:TextEditor  x:Name="CodeEditor" 
+                            Grid.Column="1" 
+                            Margin="5" 
+                            SyntaxHighlighting="C#"
+                            FontFamily="Consolas"
+                            FontSize="12"
+                            ShowLineNumbers="True"/>
     </Grid>
 </Window>

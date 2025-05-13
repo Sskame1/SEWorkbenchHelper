@@ -53,13 +53,19 @@ namespace SEWorkbenchHelper
             string newFilePath = System.IO.Path.Combine(_scriptsFolder, "ExampleScript.cs");
 
             int counter = 1;
+
             while (File.Exists(newFilePath))
             {
                 newFilePath = System.IO.Path.Combine(_scriptsFolder, $"ExampleScript{counter}.cs");
                 counter++;
             }
 
-            File.WriteAllText(newFilePath, "// New Script for Space engineers\n");
+            File.WriteAllText(newFilePath,
+                "using Sandbox.ModAPI.Ingame;\n" +
+                "using System;\n\n" +
+                "public class Program : MyGridProgram\n" +
+                "{\n    void Main(string argument)\n    {\n        // Ваш код здесь\n    }\n}");
+
             LoadScriptList();
         }
 
@@ -85,7 +91,7 @@ namespace SEWorkbenchHelper
         {
             if (FilesListView.SelectedItem is string selectedFile)
             {
-                FileContentTextBox.Text = File.ReadAllText(selectedFile);
+                CodeEditor.Load(selectedFile);
             }
         }
     }

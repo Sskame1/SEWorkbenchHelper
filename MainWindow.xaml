@@ -18,9 +18,19 @@
                 <Button Content="Refresh" Width="80" Click="Refresh_Button" />
             </StackPanel>
             <!-- List File -->
-            <ListBox x:Name="FilesListBox" Grid.Column="0" Margin="5"
-                     SelectionChanged="FilesListBox_SelectionChanged"
-                     DisplayMemberPath="FileName"/>
+            <ListView x:Name="FilesListView" Grid.Column="0" Margin="5"
+                      SelectionChanged="FilesList_SelectionChanged">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" Width="140" />
+                            <Button Content="X" Width="20" Margin="5,0,0,0"
+                                    Click="Delete_Button" Tag="{Binding FullPath}"
+                                    ToolTip="Delete Script" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
          
         

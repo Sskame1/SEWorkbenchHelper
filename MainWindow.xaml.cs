@@ -40,7 +40,7 @@ namespace SEWorkbenchHelper
                 .Select(f => new ScriptFile { FullPath = f })
                 .ToList();
 
-            FilesListBox.ItemsSource = scriptFiles;
+            FilesListView.ItemsSource = scriptFiles;
         }
 
         private void Refresh_Button(object sender, RoutedEventArgs e)
@@ -63,9 +63,27 @@ namespace SEWorkbenchHelper
             LoadScriptList();
         }
 
-        private void FilesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Delete_Button(object sender, RoutedEventArgs e)
         {
-            if (FilesListBox.SelectedItem is string selectedFile)
+            if (sender is Button button && button.Tag is string filePath)
+            {
+                var result = MessageBox.Show(
+                    $"Delete Script {System.IO.Path.GetFileName(filePath)}?",
+                    "Confirm delete script",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    File.Delete(filePath);
+                    LoadScriptList();
+                }
+            }
+        }
+
+        private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FilesListView.SelectedItem is string selectedFile)
             {
                 FileContentTextBox.Text = File.ReadAllText(selectedFile);
             }

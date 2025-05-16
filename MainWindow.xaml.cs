@@ -81,7 +81,7 @@ namespace SEWorkbenchHelper
                 "using Sandbox.ModAPI.Ingame;\n" +
                 "using System;\n\n" +
                 "public class Program : MyGridProgram\n" +
-                "{\n    void Main(string argument)\n    {\n        // Ваш код здесь\n    }\n}");
+                "{\n    void Main(string argument)\n    {\n        // your code here\n    }\n}");
 
             LoadScriptList();
         }
@@ -132,9 +132,32 @@ namespace SEWorkbenchHelper
 
         private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FilesListView.SelectedItem is ScriptFile selectedFile)
+            if (FilesListView.SelectedItem is ScriptFile selectedScript)
             {
-                CodeEditor.Load(selectedFile.FullPath);
+                if (e.RemovedItems.Count > 0 &&
+                    e.RemovedItems[0] is ScriptFile previousScript &&
+                    previousScript.IsModified)
+                {
+                    var result = MessageBox.Show(
+                        $"Save changes to {previousScript.FileName}?",
+                        "Unsaved changes",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        File.WriteAllText(previousScript.FullPath, CodeEditor.Text);
+                        previousScript.IsModified = false;
+                    }
+                    else if (result == MessageBoxResult.Cancel)
+                    {
+                        FilesListView.SelectedItem = previousScript;
+                        return;
+                    }
+                }
+
+                CodeEditor.Text = File.ReadAllText(selectedScript.FullPath);
+                selectedScript.IsModified = false;
             }
         }
     }

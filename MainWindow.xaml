@@ -15,8 +15,9 @@
 
         <StackPanel Grid.Column="0" Margin="5">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                <Button Content="Create" Width="80" Margin="0,0,5,0" Click="Create_Button" />
-                <Button Content="Refresh" Width="80" Click="Refresh_Button" />
+                <Button Content="C" Width="40" Margin="0,0,5,0" Click="Create_Button" />
+                <Button Content="R" Width="40" Margin="0,0,5,0" Click="Refresh_Button" />
+                <Button Content="S" Width="40" Click="Save_Button" />
             </StackPanel>
             <!-- List File -->
             <ListView x:Name="FilesListView" Grid.Column="0" Margin="5"

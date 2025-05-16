@@ -87,11 +87,31 @@ namespace SEWorkbenchHelper
             }
         }
 
+        private void Save_Button(object sender, RoutedEventArgs e)
+        {
+            if (FilesListView.SelectedItem is ScriptFile selectedScript)
+            {
+                try
+                {
+                    File.WriteAllText(selectedScript.FullPath, CodeEditor.Text);
+                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No file selected!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FilesListView.SelectedItem is string selectedFile)
+            if (FilesListView.SelectedItem is ScriptFile selectedFile)
             {
-                CodeEditor.Load(selectedFile);
+                CodeEditor.Load(selectedFile.FullPath);
             }
         }
     }

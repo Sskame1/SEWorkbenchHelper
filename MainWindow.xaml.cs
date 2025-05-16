@@ -25,11 +25,13 @@ namespace SEWorkbenchHelper
         {
             public string FullPath { get; set; }
             public string FileName => System.IO.Path.GetFileName(FullPath);
+            public bool IsModified { get; set; }
         }
         public MainWindow()
         {
             InitializeComponent();
             LoadScriptList();
+            CodeEditor.TextChanged += CodeEditor_TextChanged;
         }
 
         private void LoadScriptList ()
@@ -41,6 +43,21 @@ namespace SEWorkbenchHelper
                 .ToList();
 
             FilesListView.ItemsSource = scriptFiles;
+        }
+
+        private void CodeEditor_TextChanged(object sender, EventArgs e)
+        {
+            if (FilesListView.SelectedItem is ScriptFile selectedScript)
+            {
+                string savedText = File.Exists(selectedScript.FullPath)
+                    ? File.ReadAllText(selectedScript.FullPath)
+                    : string.Empty;
+
+                selectedScript.IsModified = (CodeEditor.Text != savedText);
+
+                var colletionView = CollectionViewSource.GetDefaultView(FilesListView.ItemsSource);
+                colletionView.Refresh();
+            }
         }
 
         private void Refresh_Button(object sender, RoutedEventArgs e)
@@ -94,7 +111,13 @@ namespace SEWorkbenchHelper
                 try
                 {
                     File.WriteAllText(selectedScript.FullPath, CodeEditor.Text);
+                    selectedScript.IsModified = false;
+
+                    var collectionView = CollectionViewSource.GetDefaultView(FilesListView.ItemsSource);
+                    collectionView.Refresh();
+
                     MessageBox.Show("File saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
                 }
                 catch (Exception ex)
                 {

@@ -7,6 +7,9 @@
         xmlns:local="clr-namespace:SEWorkbenchHelper"
         mc:Ignorable="d"
         Title="SEWorkbenchHelper" Height="600" Width="800">
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
@@ -26,6 +29,10 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" Width="140" />
+                            <TextBlock Text="*"
+                                       Foreground="Red"
+                                       Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       VerticalAlignment="Center"/>
                             <Button Content="X" Width="20" Margin="5,0,0,0"
                                     Click="Delete_Button" Tag="{Binding FullPath}"
                                     ToolTip="Delete Script" />

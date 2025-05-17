@@ -6,51 +6,98 @@
         xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:SEWorkbenchHelper"
         mc:Ignorable="d"
-        Title="SEWorkbenchHelper" Height="600" Width="800">
+        Title="SEWorkbenchHelper" Height="600" Width="1000">
+
     <Window.Resources>
+        <!-- Converter for modified file indicator -->
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!-- Style for side menu buttons -->
+        <Style x:Key="SideMenuButton" TargetType="Button">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ToolTipService.Placement" Value="Right" />
+        </Style>
     </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
+            <!-- Left sidebar menu -->
+            <ColumnDefinition Width="Auto" />
+            <!-- File explorer -->
+            <ColumnDefinition Width="250" />
+            <!-- Code editor -->
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Margin="5">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                <Button Content="C" Width="40" Margin="0,0,5,0" Click="Create_Button" />
-                <Button Content="R" Width="40" Margin="0,0,5,0" Click="Refresh_Button" />
-                <Button Content="S" Width="40" Click="Save_Button" />
-            </StackPanel>
-            <!-- List File -->
-            <ListView x:Name="FilesListView" Grid.Column="0" Margin="5"
-                      SelectionChanged="FilesList_SelectionChanged">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" Width="140" />
-                            <TextBlock Text="*"
-                                       Foreground="Red"
-                                       Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibilityConverter}}"
-                                       VerticalAlignment="Center"/>
-                            <Button Content="X" Width="20" Margin="5,0,0,0"
-                                    Click="Delete_Button" Tag="{Binding FullPath}"
-                                    ToolTip="Delete Script" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
-         
-        
+        <!-- ===== LEFT SIDEBAR MENU ===== -->
+        <Border Grid.Column="0" Background="#333333" BorderBrush="#252526" BorderThickness="0,0,1,0">
+            <StackPanel>
+                <!-- Files button -->
+                <Button Style="{StaticResource SideMenuButton}" Content="📁" ToolTip="Explorer" />
 
-        <!-- The area for the file contents -->
-        <avalon:TextEditor  x:Name="CodeEditor" 
-                            Grid.Column="1" 
-                            Margin="5" 
-                            SyntaxHighlighting="C#"
-                            FontFamily="Consolas"
-                            FontSize="12"
-                            ShowLineNumbers="True"/>
+                <!-- Search button -->
+                <Button Style="{StaticResource SideMenuButton}" Content="🔍" ToolTip="Search" />
+
+                <!-- Settings button -->
+                <Button Style="{StaticResource SideMenuButton}" Content="⚙️" ToolTip="Settings" 
+                        Click="OpenSettings_Click" />
+
+                <!-- Snippets button -->
+                <Button Style="{StaticResource SideMenuButton}" Content="{}" ToolTip="Snippets" 
+                        FontFamily="Consolas" FontWeight="Bold" />
+            </StackPanel>
+        </Border>
+
+        <!-- ===== FILE EXPLORER PANEL ===== -->
+        <Grid Grid.Column="1" Background="#252526">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar with buttons -->
+            <Border Grid.Row="0" Background="#333333">
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <Button Content="New" Width="50" Margin="0,0,5,0" Click="Create_Button" />
+                    <Button Content="Refresh" Width="60" Margin="0,0,5,0" Click="Refresh_Button" />
+                    <Button Content="Save" Width="50" Click="Save_Button" />
+                </StackPanel>
+            </Border>
+
+            <!-- File tree view -->
+            <TreeView x:Name="FilesTreeView" Grid.Row="1" Margin="5" Background="Transparent" 
+                      Foreground="White" BorderThickness="0">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- File/folder icon -->
+                            <Image Width="16" Height="16" Margin="0,0,5,0"
+                                   Source="{Binding IconPath}" />
+                            <!-- File name -->
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                            <!-- Modified indicator -->
+                            <TextBlock Text="*" Foreground="Red" Margin="5,0,0,0"
+                                       Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+
+        <!-- ===== CODE EDITOR AREA ===== -->
+        <avalon:TextEditor x:Name="CodeEditor" 
+                          Grid.Column="2" 
+                          Margin="0" 
+                          SyntaxHighlighting="C#" 
+                          FontFamily="Consolas" 
+                          FontSize="14"
+                          ShowLineNumbers="True"
+                          Background="#1E1E1E"
+                          Foreground="#D4D4D4"
+                          LineNumbersForeground="#858585"/>
     </Grid>
 </Window>

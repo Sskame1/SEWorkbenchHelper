@@ -1,123 +1,110 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.IO;
-using System.Windows.Controls;
 
 namespace SEWorkbenchHelper
 {
     public partial class MainWindow : Window
     {
-        private readonly string _scriptsFolder = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
+        private readonly string _scriptsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
-        public class ScriptFile
-        {
-            public string FullPath { get; set; }
-            public string FileName => System.IO.Path.GetFileName(FullPath);
-            public bool IsModified { get; set; }
-        }
         public MainWindow()
         {
             InitializeComponent();
-            LoadScriptList();
+            LoadFileTree();
             CodeEditor.TextChanged += CodeEditor_TextChanged;
         }
 
-        private void LoadScriptList ()
+        // Class for file tree items
+        public class FileTreeItem
         {
-            if (!Directory.Exists(_scriptsFolder)) Directory.CreateDirectory(_scriptsFolder);
-
-            var scriptFiles = Directory.GetFiles(_scriptsFolder, "*.cs")
-                .Select(f => new ScriptFile { FullPath = f })
-                .ToList();
-
-            FilesListView.ItemsSource = scriptFiles;
+            public string Name { get; set; }
+            public string FullPath { get; set; }
+            public bool IsModified { get; set; }
+            public BitmapImage Icon => IsDirectory ?
+                new BitmapImage(new Uri("pack://application:,,,/Resources/folder.png")) :
+                new BitmapImage(new Uri("pack://application:,,,/Resources/file.png"));
+            public bool IsDirectory { get; set; }
+            public ObservableCollection<FileTreeItem> SubItems { get; set; } = new ObservableCollection<FileTreeItem>();
         }
 
+        // Load files into tree view
+        private void LoadFileTree()
+        {
+            FilesTreeView.Items.Clear();
+
+            if (!Directory.Exists(_scriptsFolder))
+                Directory.CreateDirectory(_scriptsFolder);
+
+            var rootItem = new FileTreeItem
+            {
+                Name = "Scripts",
+                FullPath = _scriptsFolder,
+                IsDirectory = true
+            };
+
+            foreach (var file in Directory.GetFiles(_scriptsFolder, "*.cs"))
+            {
+                rootItem.SubItems.Add(new FileTreeItem
+                {
+                    Name = Path.GetFileName(file),
+                    FullPath = file,
+                    IsDirectory = false
+                });
+            }
+
+            FilesTreeView.Items.Add(rootItem);
+        }
+
+        // Handle text changes in editor
         private void CodeEditor_TextChanged(object sender, EventArgs e)
         {
-            if (FilesListView.SelectedItem is ScriptFile selectedScript)
+            if (FilesTreeView.SelectedItem is FileTreeItem selectedItem && !selectedItem.IsDirectory)
             {
-                string savedText = File.Exists(selectedScript.FullPath)
-                    ? File.ReadAllText(selectedScript.FullPath)
-                    : string.Empty;
-
-                selectedScript.IsModified = (CodeEditor.Text != savedText);
-
-                var colletionView = CollectionViewSource.GetDefaultView(FilesListView.ItemsSource);
-                colletionView.Refresh();
+                string savedText = File.Exists(selectedItem.FullPath) ?
+                    File.ReadAllText(selectedItem.FullPath) : string.Empty;
+                selectedItem.IsModified = CodeEditor.Text != savedText;
             }
         }
 
-        private void Refresh_Button(object sender, RoutedEventArgs e)
-        {
-            LoadScriptList();
-        }
-
+        // Button handlers
         private void Create_Button(object sender, RoutedEventArgs e)
         {
-            string newFilePath = System.IO.Path.Combine(_scriptsFolder, "ExampleScript.cs");
-
+            string newFilePath = Path.Combine(_scriptsFolder, "NewScript.cs");
             int counter = 1;
 
             while (File.Exists(newFilePath))
             {
-                newFilePath = System.IO.Path.Combine(_scriptsFolder, $"ExampleScript{counter}.cs");
+                newFilePath = Path.Combine(_scriptsFolder, $"NewScript{counter}.cs");
                 counter++;
             }
 
-            File.WriteAllText(newFilePath,
-                "using Sandbox.ModAPI.Ingame;\n" +
-                "using System;\n\n" +
-                "public class Program : MyGridProgram\n" +
-                "{\n    void Main(string argument)\n    {\n        // your code here\n    }\n}");
+            string defaultContent = "using Sandbox.ModAPI.Ingame;\n" +
+                                  "using System;\n\n" +
+                                  "public class Program : MyGridProgram\n" +
+                                  "{\n    void Main(string argument)\n    {\n        // Your code here\n    }\n}";
 
-            LoadScriptList();
+            File.WriteAllText(newFilePath, defaultContent);
+            LoadFileTree();
         }
 
-        private void Delete_Button(object sender, RoutedEventArgs e)
+        private void Refresh_Button(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is string filePath)
-            {
-                var result = MessageBox.Show(
-                    $"Delete Script {System.IO.Path.GetFileName(filePath)}?",
-                    "Confirm delete script",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    File.Delete(filePath);
-                    LoadScriptList();
-                }
-            }
+            LoadFileTree();
         }
 
         private void Save_Button(object sender, RoutedEventArgs e)
         {
-            if (FilesListView.SelectedItem is ScriptFile selectedScript)
+            if (FilesTreeView.SelectedItem is FileTreeItem selectedItem && !selectedItem.IsDirectory)
             {
                 try
                 {
-                    File.WriteAllText(selectedScript.FullPath, CodeEditor.Text);
-                    selectedScript.IsModified = false;
-
-                    var collectionView = CollectionViewSource.GetDefaultView(FilesListView.ItemsSource);
-                    collectionView.Refresh();
-
+                    File.WriteAllText(selectedItem.FullPath, CodeEditor.Text);
+                    selectedItem.IsModified = false;
                     MessageBox.Show("File saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    
                 }
                 catch (Exception ex)
                 {
@@ -130,34 +117,18 @@ namespace SEWorkbenchHelper
             }
         }
 
-        private void FilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            if (FilesListView.SelectedItem is ScriptFile selectedScript)
+            MessageBox.Show("It's not a working button yet.", "Settings", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Handle file selection in tree view
+        private void FilesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (FilesTreeView.SelectedItem is FileTreeItem selectedItem && !selectedItem.IsDirectory)
             {
-                if (e.RemovedItems.Count > 0 &&
-                    e.RemovedItems[0] is ScriptFile previousScript &&
-                    previousScript.IsModified)
-                {
-                    var result = MessageBox.Show(
-                        $"Save changes to {previousScript.FileName}?",
-                        "Unsaved changes",
-                        MessageBoxButton.YesNoCancel,
-                        MessageBoxImage.Question);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        File.WriteAllText(previousScript.FullPath, CodeEditor.Text);
-                        previousScript.IsModified = false;
-                    }
-                    else if (result == MessageBoxResult.Cancel)
-                    {
-                        FilesListView.SelectedItem = previousScript;
-                        return;
-                    }
-                }
-
-                CodeEditor.Text = File.ReadAllText(selectedScript.FullPath);
-                selectedScript.IsModified = false;
+                CodeEditor.Text = File.ReadAllText(selectedItem.FullPath);
+                selectedItem.IsModified = false;
             }
         }
     }

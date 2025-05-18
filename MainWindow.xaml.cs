@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -155,8 +156,33 @@ namespace SEWorkbenchHelper
         {
             if (FilesTreeView.SelectedItem is FileTreeItem selectedItem && !selectedItem.IsDirectory)
             {
-                CodeEditor.Text = File.ReadAllText(selectedItem.FullPath);
-                selectedItem.IsModified = false;
+                try
+                {
+                    CodeEditor.Text = File.ReadAllText(selectedItem.FullPath, Encoding.UTF8);
+
+                    string extension = Path.GetExtension(selectedItem.FullPath).ToLower();
+                    var highlightingManager = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance;
+
+                    switch (extension)
+                    {
+                        case ".cs":
+                            CodeEditor.SyntaxHighlighting = highlightingManager.GetDefinition("C#");
+                            break;
+                        case ".txt":
+                            CodeEditor.SyntaxHighlighting = null;
+                            break;
+                        default:
+                            CodeEditor.SyntaxHighlighting = highlightingManager.GetDefinitionByExtension(extension);
+                            break;
+                    }
+
+                    selectedItem.IsModified = false;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error when opening a file: {ex.Message}", "Error",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

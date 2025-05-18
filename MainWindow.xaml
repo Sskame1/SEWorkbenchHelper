@@ -75,7 +75,7 @@
 
             <!-- File tree view -->
             <TreeView x:Name="FilesTreeView" Grid.Row="1" Margin="5" Background="Transparent" 
-          Foreground="White" BorderThickness="0">
+          Foreground="White" BorderThickness="0" SelectedItemChanged="FilesTreeView_SelectedItemChanged">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
                         <StackPanel Orientation="Horizontal" Margin="5,0">

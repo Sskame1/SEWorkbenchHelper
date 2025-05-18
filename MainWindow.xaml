@@ -9,8 +9,9 @@
         Title="SEWorkbenchHelper" Height="600" Width="1000">
 
     <Window.Resources>
-        <!-- Converter for modified file indicator -->
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <local:NullToVisibilityConverter x:Key="NullToVisibility" />
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
         <!-- Style for side menu buttons -->
         <Style x:Key="SideMenuButton" TargetType="Button">
@@ -20,6 +21,10 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ToolTipService.Placement" Value="Right" />
+        </Style>
+        <Style TargetType="{x:Type TreeViewItem}">
+            <Setter Property="Padding" Value="5,3" />
+            <Setter Property="Margin" Value="0,2"/>
         </Style>
     </Window.Resources>
 
@@ -70,18 +75,17 @@
 
             <!-- File tree view -->
             <TreeView x:Name="FilesTreeView" Grid.Row="1" Margin="5" Background="Transparent" 
-                      Foreground="White" BorderThickness="0">
+          Foreground="White" BorderThickness="0">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
-                        <StackPanel Orientation="Horizontal">
-                            <!-- File/folder icon -->
-                            <Image Width="16" Height="16" Margin="0,0,5,0"
-                                   Source="{Binding IconPath}" />
-                            <!-- File name -->
+                        <StackPanel Orientation="Horizontal" Margin="5,0">
+                            <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"
+                       Visibility="{Binding Icon, Converter={StaticResource NullToVisibility}}"/>
+                            
                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                            <!-- Modified indicator -->
-                            <TextBlock Text="*" Foreground="Red" Margin="5,0,0,0"
-                                       Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                            <TextBlock Text=" *" Foreground="Yellow" VerticalAlignment="Center"
+                           Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}"/>
                         </StackPanel>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>

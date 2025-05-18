@@ -14,6 +14,13 @@ namespace SEWorkbenchHelper
         public MainWindow()
         {
             InitializeComponent();
+
+            string resourcesPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
+            if (!Directory.Exists(resourcesPath))
+            {
+                Directory.CreateDirectory(resourcesPath);
+            }
+
             LoadFileTree();
             CodeEditor.TextChanged += CodeEditor_TextChanged;
         }
@@ -24,10 +31,31 @@ namespace SEWorkbenchHelper
             public string Name { get; set; }
             public string FullPath { get; set; }
             public bool IsModified { get; set; }
-            public BitmapImage Icon => IsDirectory ?
-                new BitmapImage(new Uri("pack://application:,,,/Resources/folder.png")) :
-                new BitmapImage(new Uri("pack://application:,,,/Resources/file.png"));
-            public bool IsDirectory { get; set; }
+            public bool IsDirectory {  get; set; }
+            public BitmapImage Icon
+            {
+                get
+                {
+                    try
+                    {
+                        string iconName = IsDirectory ? "folder.png" : "file.png";
+                        string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", iconName);
+
+                        if (File.Exists(iconPath))
+                        {
+                            return new BitmapImage(new Uri(iconPath));
+                        }
+
+                        return IsDirectory
+                            ? new BitmapImage(new Uri("pack://application:,,,/Resources/folder.png"))
+                            : new BitmapImage(new Uri("pack://application:,,,/Resources/file.png"));
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
             public ObservableCollection<FileTreeItem> SubItems { get; set; } = new ObservableCollection<FileTreeItem>();
         }
 

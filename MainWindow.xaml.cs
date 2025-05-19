@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Newtonsoft.Json;
 
 namespace SEWorkbenchHelper
 {
@@ -28,6 +30,15 @@ namespace SEWorkbenchHelper
             CodeEditor.TextArea.SelectionBrush = new SolidColorBrush(Color.FromArgb(100, 173, 214, 255));
         }
 
+        public class Project
+        {
+            public string Name { get; set; }
+            public string Author { get; set; }
+            public string Version { get; set; } = "1.0.0";
+            public string Description { get; set; }
+            public List<string> Files { get; set; } = new List<string>();
+        }
+
         // Class for file tree items
         public class FileTreeItem
         {
@@ -35,59 +46,128 @@ namespace SEWorkbenchHelper
             public string FullPath { get; set; }
             public bool IsModified { get; set; }
             public bool IsDirectory {  get; set; }
+            public bool IsProjectRoot { get; set; }
+            public ObservableCollection<FileTreeItem> SubItems { get; set; } = new ObservableCollection<FileTreeItem>();
             public BitmapImage Icon
             {
                 get
                 {
-                    try
+                    if (IsProjectRoot)
                     {
-                        string iconName = IsDirectory ? "folder.png" : "file.png";
-                        string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", iconName);
-
-                        if (File.Exists(iconPath))
-                        {
-                            return new BitmapImage(new Uri(iconPath));
-                        }
-
-                        return IsDirectory
-                            ? new BitmapImage(new Uri("pack://application:,,,/Resources/folder.png"))
-                            : new BitmapImage(new Uri("pack://application:,,,/Resources/file.png"));
+                        return LoadIcon("project.png");
                     }
-                    catch
-                    {
-                        return null;
-                    }
+                    return IsDirectory ? LoadIcon("folder.png") : LoadIcon("file.png");
                 }
             }
+
+            private BitmapImage LoadIcon(string iconName)
+            {
+                try
+                {
+                    string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", iconName);
+                    if (File.Exists(iconPath))
+                    {
+                        return new BitmapImage(new Uri(iconPath));
+                    }
+                    return new BitmapImage(new Uri($"pack://application:,,,/Resources/{iconName}"));
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
             public ObservableCollection<FileTreeItem> SubItems { get; set; } = new ObservableCollection<FileTreeItem>();
+
+        private void NewProject_Click(object sender, RoutedEventArgs e)
+        {
+            var newProjectWindow = new NewProjectWindow();
+            if (newProjectWindow.ShowDialog() == true)
+            {
+                LoadProject(newProjectWindow.ProjectPath, Get_scriptsFolder());
+            }
+        }
+
+        private string Get_scriptsFolder()
+        {
+            return _scriptsFolder;
+        }
+
+        private void LoadProject(string projectPath, string currentScriptsFolder)
+        {
+            string projectJsonPath = Path.Combine(projectPath, "project.json");
+            if (File.Exists(projectJsonPath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(projectJsonPath);
+                    var project = JsonConvert.DeserializeObject<Project>(json);
+
+                    Title = $"SEWorkbenchHelper - {project.Name}";
+                    string newScriptsFolder = Path.Combine(projectPath, "Scripts");
+                    LoadFileTree(newScriptsFolder);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading project: {ex.Message}", "Error",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         // Load files into tree view
-        private void LoadFileTree()
+        private void LoadFileTree(string scriptsFolder = null)
         {
+            string folderToLoad = scriptsFolder ?? _scriptsFolder;
             FilesTreeView.Items.Clear();
 
-            if (!Directory.Exists(_scriptsFolder))
-                Directory.CreateDirectory(_scriptsFolder);
+            if (!Directory.Exists(folderToLoad))
+            {
+                Directory.CreateDirectory(folderToLoad);
+                return;
+            }
+
+            bool isProject = File.Exists(Path.Combine(Directory.GetParent(folderToLoad).FullName, "project.json"));
 
             var rootItem = new FileTreeItem
             {
-                Name = "Scripts",
-                FullPath = _scriptsFolder,
-                IsDirectory = true
+                Name = isProject ? Path.GetFileName(Directory.GetParent(folderToLoad).FullName) : "Scripts",
+                FullPath = folderToLoad,
+                IsDirectory = true,
+                IsProjectRoot = isProject
             };
 
-            foreach (var file in Directory.GetFiles(_scriptsFolder, "*.cs"))
-            {
-                rootItem.SubItems.Add(new FileTreeItem
-                {
-                    Name = Path.GetFileName(file),
-                    FullPath = file,
-                    IsDirectory = false
-                });
-            }
-
+            LoadDirectoryContents(rootItem, folderToLoad);
             FilesTreeView.Items.Add(rootItem);
+        }
+        private void LoadDirectoryContents(FileTreeItem parentItem, string directoryPath)
+        {
+            try
+            {
+                foreach (var file in Directory.GetFiles(directoryPath))
+                {
+                    parentItem.SubItems.Add(new FileTreeItem
+                    {
+                        Name = Path.GetFileName(file),
+                        FullPath = file,
+                        IsDirectory = false
+                    });
+                }
+
+                foreach (var dir in Directory.GetDirectories(directoryPath))
+                {
+                    var dirItem = new FileTreeItem
+                    {
+                        Name = Path.GetFileName(dir),
+                        FullPath = dir,
+                        IsDirectory = true
+                    };
+
+                    parentItem.SubItems.Add(dirItem);
+                    LoadDirectoryContents(dirItem, dir);
+                }
+            }
+            catch (UnauthorizedAccessException) { }
         }
 
         // Handle text changes in editor

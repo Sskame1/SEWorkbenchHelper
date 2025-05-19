@@ -56,6 +56,8 @@
                 <!-- Snippets button -->
                 <Button Style="{StaticResource SideMenuButton}" Content="{}" ToolTip="Snippets" 
                         FontFamily="Consolas" FontWeight="Bold" />
+                <!-- Create New Project button -->
+                    <Button Style="{StaticResource SideMenuButton}" Content="🆕" ToolTip="New Project" Click="NewProject_Click"/>
             </StackPanel>
         </Border>
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace SEWorkbenchHelper
@@ -24,6 +25,7 @@ namespace SEWorkbenchHelper
 
             LoadFileTree();
             CodeEditor.TextChanged += CodeEditor_TextChanged;
+            CodeEditor.TextArea.SelectionBrush = new SolidColorBrush(Color.FromArgb(100, 173, 214, 255));
         }
 
         // Class for file tree items

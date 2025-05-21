@@ -13,7 +13,7 @@ namespace SEWorkbenchHelper
 {
     public partial class MainWindow : Window
     {
-        private readonly string _scriptsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
+        private string _currentProjectPath;
 
         public MainWindow()
         {
@@ -45,11 +45,21 @@ namespace SEWorkbenchHelper
             {
                 get
                 {
-                    if (IsProjectRoot)
+                    if (IsProjectRoot) return LoadIcon("project.png");
+                    if (IsDirectory) return LoadIcon("folder.png");
+
+                    string ext = Path.GetExtension(Name)?.ToLower();
+                   switch (ext)
                     {
-                        return LoadIcon("project.png");
-                    }
-                    return IsDirectory ? LoadIcon("folder.png") : LoadIcon("file.png");
+                        case ".cs":
+                            return LoadIcon("cs.png");
+                        case ".txt":
+                            return LoadIcon("txt.png");
+                        case ".json":
+                            return LoadIcon("json.png");
+                        default:
+                            return LoadIcon("file.png");
+                    };
                 }
             }
 
@@ -70,35 +80,26 @@ namespace SEWorkbenchHelper
                 }
             }
         }
-            public ObservableCollection<FileTreeItem> SubItems { get; set; } = new ObservableCollection<FileTreeItem>();
 
         private void NewProject_Click(object sender, RoutedEventArgs e)
         {
             var newProjectWindow = new NewProjectWindow();
-            if (newProjectWindow.ShowDialog() == true)
-            {
-                LoadProject(newProjectWindow.ProjectPath, Get_scriptsFolder());
-            }
-        }
-
-        private string Get_scriptsFolder()
-        {
-            return _scriptsFolder;
+            newProjectWindow.Owner = this;
         }
 
         public void LoadProject(string projectPath, string currentScriptsFolder)
         {
+            _currentProjectPath = projectPath;
             string projectJsonPath = Path.Combine(projectPath, "project.json");
+
             if (File.Exists(projectJsonPath))
             {
                 try
                 {
-                    string json = File.ReadAllText(projectJsonPath);
-                    var project = JsonConvert.DeserializeObject<Project>(json);
+                    var project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(projectJsonPath));
 
                     Title = $"SEWorkbenchHelper - {project.Name}";
-                    string newScriptsFolder = Path.Combine(projectPath, "Scripts");
-                    LoadFileTree(newScriptsFolder);
+                    LoadFileTree(projectPath);
                 }
                 catch (Exception ex)
                 {
@@ -109,36 +110,31 @@ namespace SEWorkbenchHelper
         }
 
         // Load files into tree view
-        private void LoadFileTree(string scriptsFolder = null)
+        private void LoadFileTree(string rootPath)
         {
-            string folderToLoad = scriptsFolder ?? _scriptsFolder;
             FilesTreeView.Items.Clear();
-
-            if (!Directory.Exists(folderToLoad))
-            {
-                Directory.CreateDirectory(folderToLoad);
-                return;
-            }
-
-            bool isProject = File.Exists(Path.Combine(Directory.GetParent(folderToLoad).FullName, "project.json"));
 
             var rootItem = new FileTreeItem
             {
-                Name = isProject ? Path.GetFileName(Directory.GetParent(folderToLoad).FullName) : "Scripts",
-                FullPath = folderToLoad,
+                Name = Path.GetFileName(rootPath),
+                FullPath = rootPath,
                 IsDirectory = true,
-                IsProjectRoot = isProject
+                IsProjectRoot = true
             };
 
-            LoadDirectoryContents(rootItem, folderToLoad);
+            LoadDirectoryContents(rootItem, rootPath);
             FilesTreeView.Items.Add(rootItem);
         }
         private void LoadDirectoryContents(FileTreeItem parentItem, string directoryPath)
         {
             try
             {
+                if (Path.GetFileName(directoryPath).StartsWith(".")) return;
+
                 foreach (var file in Directory.GetFiles(directoryPath))
                 {
+                    if (Path.GetFileName(file).StartsWith("~$")) continue;
+
                     parentItem.SubItems.Add(new FileTreeItem
                     {
                         Name = Path.GetFileName(file),
@@ -177,27 +173,42 @@ namespace SEWorkbenchHelper
         // Button handlers
         private void Create_Button(object sender, RoutedEventArgs e)
         {
-            string newFilePath = Path.Combine(_scriptsFolder, "NewScript.cs");
-            int counter = 1;
-
-            while (File.Exists(newFilePath))
+           if (string.IsNullOrEmpty(_currentProjectPath))
             {
-                newFilePath = Path.Combine(_scriptsFolder, $"NewScript{counter}.cs");
-                counter++;
+                MessageBox.Show("No project opened", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
-            string defaultContent = "using Sandbox.ModAPI.Ingame;\n" +
-                                  "using System;\n\n" +
-                                  "public class Program : MyGridProgram\n" +
-                                  "{\n    void Main(string argument)\n    {\n        // Your code here\n    }\n}";
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                SelectedPath = _currentProjectPath,
+                Description = "Select folder to create new file"
+            };
 
-            File.WriteAllText(newFilePath, defaultContent);
-            LoadFileTree();
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string newFilePath = Path.Combine(dialog.SelectedPath, "NewFile.cs");
+                int counter = 1;
+
+                while (File.Exists(newFilePath))
+                {
+                    newFilePath = Path.Combine(dialog.SelectedPath, $"NewFile{counter}.cs");
+                    counter++;
+                }
+
+                string defaultContent = "using Sandbox.ModAPI.Ingame;\n" +
+                                      "using System;\n\n" +
+                                      "public class Program : MyGridProgram\n" +
+                                      "{\n    void Main(string argument)\n    {\n        // Your code here\n    }\n}";
+
+                File.WriteAllText(newFilePath, defaultContent);
+                LoadFileTree(_currentProjectPath);
+            }
         }
 
         private void Refresh_Button(object sender, RoutedEventArgs e)
         {
-            LoadFileTree();
+            LoadFileTree(_currentProjectPath);
         }
 
         private void Save_Button(object sender, RoutedEventArgs e)

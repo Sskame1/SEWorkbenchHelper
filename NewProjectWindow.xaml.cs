@@ -41,7 +41,6 @@ namespace SEWorkbenchHelper
                     JsonConvert.SerializeObject(project, Newtonsoft.Json.Formatting.Indented)
                 );
 
-                Directory.CreateDirectory(Path.Combine(projectPath, "Scripts"));
                 Directory.CreateDirectory(Path.Combine(projectPath, "Data"));
 
                 ProjectPath = projectPath;

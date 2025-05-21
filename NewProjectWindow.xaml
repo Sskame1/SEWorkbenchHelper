@@ -1,30 +1,101 @@
 ﻿<Window x:Class="SEWorkbenchHelper.NewProjectWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="New Project" Height="300" Width="400"
-        WindowStartupLocation="CenterOwner">
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="New Project"
+        Height="400"
+        Width="450"
+        MinHeight="400"
+        MinWidth="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
 
-        <Label Content="Project Name:" Grid.Row="0"/>
-        <TextBox x:Name="ProjectNameTextBox" Grid.Row="1" Margin="0,0,0,10"/>
+	<Border Margin="10" Padding="10" Background="White" CornerRadius="4" BorderThickness="1" BorderBrush="#FFCCCCCC">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<!-- Header -->
+				<RowDefinition Height="Auto"/>
+				<!-- Project Name Label -->
+				<RowDefinition Height="Auto"/>
+				<!-- Project Name TextBox -->
+				<RowDefinition Height="Auto"/>
+				<!-- Author Label -->
+				<RowDefinition Height="Auto"/>
+				<!-- Author TextBox -->
+				<RowDefinition Height="Auto"/>
+				<!-- Description Label -->
+				<RowDefinition Height="*"/>
+				<!-- Description TextBox -->
+				<RowDefinition Height="Auto"/>
+				<!-- Buttons Panel -->
+			</Grid.RowDefinitions>
 
-        <Label Content="Author:" Grid.Row="2"/>
-        <TextBox x:Name="AuthorTextBox" Grid.Row="3" Margin="0,0,0,10"/>
+			<!-- Header -->
+			<TextBlock Text="Create New Project"
+                       Grid.Row="0"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,15"
+                       Foreground="#FF333333"/>
 
-        <Label Content="Description:" Grid.Row="4"/>
-        <TextBox x:Name="DescriptionTextBox" Grid.Row="5" Margin="0,0,0,10" AcceptsReturn="True" Height="60"/>
+			<!-- Project Name -->
+			<Label Content="Project Name:"
+                   Grid.Row="1"
+                   Padding="0,0,0,3"
+                   Foreground="#FF333333"/>
+			<TextBox x:Name="ProjectNameTextBox"
+                     Grid.Row="2"
+                     Margin="0,0,0,10"
+                     Padding="5"
+                     Height="28"/>
 
-        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Cancel" Width="80" Margin="0,0,10,0" Click="Cancel_Click"/>
-            <Button Content="Create" Width="80" Click="Create_Click"/>
-        </StackPanel>
-    </Grid>
+			<!-- Author -->
+			<Label Content="Author:"
+                   Grid.Row="3"
+                   Padding="0,0,0,3"
+                   Foreground="#FF333333"/>
+			<TextBox x:Name="AuthorTextBox"
+                     Grid.Row="4"
+                     Margin="0,0,0,15"
+                     Padding="5"
+                     Height="28"/>
+
+			<!-- Description -->
+			<Label Content="Description:"
+                   Grid.Row="5"
+                   Padding="0,0,0,3"
+                   Foreground="#FF333333"/>
+			<TextBox x:Name="DescriptionTextBox"
+                     Grid.Row="6"
+                     Margin="0,0,0,15"
+                     Padding="5"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     VerticalAlignment="Stretch"/>
+
+			<!-- Buttons -->
+			<StackPanel Grid.Row="7"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,15,0,0">
+				<Button Content="Cancel"
+                        Width="90"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Click="Cancel_Click"/>
+				<Button Content="Create"
+                        Width="90"
+                        Height="28"
+                        Click="Create_Click"
+                        IsDefault="True"
+                        Background="#FF0078D7"
+                        Foreground="White"/>
+			</StackPanel>
+		</Grid>
+	</Border>
 </Window>

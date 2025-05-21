@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using System.Xml;
 using Newtonsoft.Json;
@@ -19,7 +20,7 @@ namespace SEWorkbenchHelper
         {
             if (string.IsNullOrWhiteSpace(ProjectNameTextBox.Text))
             {
-                MessageBox.Show("Please enter project name", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Specify the project name", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -30,25 +31,27 @@ namespace SEWorkbenchHelper
                 Description = DescriptionTextBox.Text
             };
 
-            // Создаем папку проекта
-            string projectsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Projects");
-            if (!Directory.Exists(projectsFolder))
-                Directory.CreateDirectory(projectsFolder);
+            string projectPath = Path.Combine(Directory.GetCurrentDirectory(), "Projects", ProjectNameTextBox.Text);
 
-            ProjectPath = Path.Combine(projectsFolder, ProjectNameTextBox.Text);
-            Directory.CreateDirectory(ProjectPath);
+            try
+            {
+                Directory.CreateDirectory(projectPath);
+                File.WriteAllText(
+                    Path.Combine(projectPath, "project.json"),
+                    JsonConvert.SerializeObject(project, Newtonsoft.Json.Formatting.Indented)
+                );
 
-            // Создаем файл проекта
-            string projectJson = JsonConvert.SerializeObject(project, (Newtonsoft.Json.Formatting)System.Xml.Formatting.Indented);
-            File.WriteAllText(Path.Combine(ProjectPath, "project.json"), projectJson);
+                Directory.CreateDirectory(Path.Combine(projectPath, "Scripts"));
+                Directory.CreateDirectory(Path.Combine(projectPath, "Data"));
 
-            // Создаем стандартную структуру папок
-            Directory.CreateDirectory(Path.Combine(ProjectPath, "Scripts"));
-            Directory.CreateDirectory(Path.Combine(ProjectPath, "Data"));
-            Directory.CreateDirectory(Path.Combine(ProjectPath, "Resources"));
-
-            DialogResult = true;
-            Close();
+                ProjectPath = projectPath;
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)

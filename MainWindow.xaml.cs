@@ -19,13 +19,6 @@ namespace SEWorkbenchHelper
         {
             InitializeComponent();
 
-            string resourcesPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
-            if (!Directory.Exists(resourcesPath))
-            {
-                Directory.CreateDirectory(resourcesPath);
-            }
-
-            LoadFileTree();
             CodeEditor.TextChanged += CodeEditor_TextChanged;
             CodeEditor.TextArea.SelectionBrush = new SolidColorBrush(Color.FromArgb(100, 173, 214, 255));
         }
@@ -93,7 +86,7 @@ namespace SEWorkbenchHelper
             return _scriptsFolder;
         }
 
-        private void LoadProject(string projectPath, string currentScriptsFolder)
+        public void LoadProject(string projectPath, string currentScriptsFolder)
         {
             string projectJsonPath = Path.Combine(projectPath, "project.json");
             if (File.Exists(projectJsonPath))

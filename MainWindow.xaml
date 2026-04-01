@@ -4,18 +4,29 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SEWorkbenchHelper"
-        mc:Ignorable="d"
         xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+        mc:Ignorable="d"
         Title="SEWorkbenchHelper" Height="450" Width="800">
     <Grid>
-        <StackPanel>
-            <Button Content="Проверить" Click="Button_Click" Height="30" />
-            <avalon:TextEditor Name="CodeEditor"
-                   FontFamily="Consolas"
-                   FontSize="12"
-                   SyntaxHighlighting="C#"
-                   ShowLineNumbers="True"/>
-        </StackPanel>
+        <avalon:TextEditor Name="CodeEditor"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           SyntaxHighlighting="C#"
+                           ShowLineNumbers="True"/>
+        <Popup x:Name="CompletionPopup"
+               Placement="Relative"
+               PlacementTarget="{Binding ElementName=CodeEditor}"
+               StaysOpen="False"
+               AllowsTransparency="True">
+            <ListBox x:Name="CompletionList"
+                     Background="White"
+                     BorderBrush="LightGray"
+                     BorderThickness="1"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     MaxHeight="200"
+                     Width="250"
+                     SelectionMode="Single"/>
+        </Popup>
     </Grid>
-    
 </Window>

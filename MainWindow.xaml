@@ -8,25 +8,34 @@
         mc:Ignorable="d"
         Title="SEWorkbenchHelper" Height="450" Width="800">
     <Grid>
-        <avalon:TextEditor Name="CodeEditor"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Open" Click="OpenFile_Click"/>
+                <MenuItem Header="Save" Click="SaveFile_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <avalon:TextEditor x:Name="textEditor"
+                           Grid.Row="1"
                            FontFamily="Consolas"
-                           FontSize="12"
+                           FontSize="14"
                            SyntaxHighlighting="C#"
-                           ShowLineNumbers="True"/>
-        <Popup x:Name="CompletionPopup"
-               Placement="Relative"
-               PlacementTarget="{Binding ElementName=CodeEditor}"
-               StaysOpen="False"
-               AllowsTransparency="True">
-            <ListBox x:Name="CompletionList"
-                     Background="White"
-                     BorderBrush="LightGray"
-                     BorderThickness="1"
-                     FontFamily="Consolas"
-                     FontSize="12"
-                     MaxHeight="200"
-                     Width="250"
-                     SelectionMode="Single"/>
-        </Popup>
+                           ShowLineNumbers="True"
+                           WordWrap="True"/>
+
+        <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="5">
+            <TextBox x:Name="outputTextBox"
+                     IsReadOnly="True"
+                     Background="#F0F0F0"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"/>
+        </Border>
     </Grid>
 </Window>

@@ -8,10 +8,14 @@
         xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
         Title="SEWorkbenchHelper" Height="450" Width="800">
     <Grid>
-        <avalon:TextEditor Name="CodeEditor"
-                           FontFamily="Consolas"
-                           FontSize="12"
-                           SyntaxHighlighting="C#"
-                           ShowLineNumbers="True"/>
+        <StackPanel>
+            <Button Content="Проверить" Click="Button_Click" Height="30" />
+            <avalon:TextEditor Name="CodeEditor"
+                   FontFamily="Consolas"
+                   FontSize="12"
+                   SyntaxHighlighting="C#"
+                   ShowLineNumbers="True"/>
+        </StackPanel>
     </Grid>
+    
 </Window>
